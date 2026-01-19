@@ -25,6 +25,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/users/{id}/permissions', [UserController::class, 'getPermissions']);
         // Guardar la nueva lista de permisos del usuario
         Route::put('/users/{id}/permissions', [UserController::class, 'syncPermissions']);
+        Route::get('/roles', [App\Http\Controllers\RoleController::class, 'index']); // Listar roles
+        Route::get('/roles/{id}', [App\Http\Controllers\RoleController::class, 'show']); // Ver permisos del rol
+        Route::put('/roles/{id}', [App\Http\Controllers\RoleController::class, 'update']); // Guardar cambios
     });
 
 });
