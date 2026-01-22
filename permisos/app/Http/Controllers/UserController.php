@@ -123,5 +123,6 @@ public function getPermissions($id)
 
         return response()->json(['message' => 'Permisos actualizados correctamente']);
     }
+
 }
 

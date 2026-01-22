@@ -30,12 +30,12 @@
             </div>
 
             <div class="text-center my-3 permission-item" data-permission="programar_viaje">
-                <a href="#" style="background-color: #17a2b8; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
+                <a href="{{ route('viajes.programar') }}" style="background-color: #17a2b8; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
                     Programar viaje
                 </a>
             </div>
 
-            <div class="text-center my-3 permission-item" data-permission="control_usuarios">
+            <div class="text-center my-3 permission-item" data-permission="ver_usuarios">
                 <a href="{{ route('users.control') }}" style="background-color: #dc3545; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
                     Control usuarios
                 </a>
@@ -53,7 +53,6 @@
 
 @section('scripts')
 <script>
-    // Mostrar nombre de usuario en el cuerpo
     const u = JSON.parse(localStorage.getItem('user_data') || '{}');
     document.getElementById('content-username').textContent = u.name || 'Usuario';
 </script>

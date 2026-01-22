@@ -67,7 +67,7 @@
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
 
-                    <li class="nav-item permission-item" data-permission="ver_inicio">
+                    <li class="nav-item">
                         <a href="/dashboard" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i><p>Inicio</p>
                         </a>
@@ -79,44 +79,26 @@
                         </a>
                     </li>
 
-                    <li class="nav-item permission-item" data-permission="control_usuarios">
+                    <li class="nav-item permission-item" data-permission="ver_usuarios">
                         <a href="{{ route('users.control') }}" class="nav-link">
                             <i class="fas fa-users nav-icon"></i><p> Usuarios</p>
                         </a>
                     </li>
 
-                    <li class="nav-item permission-item" data-permission="ver_viajes">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-truck nav-icon"></i><p> Viajes</p>
-                        </a>
-                    </li>
-
-                    <li class="nav-item permission-item" data-permission="control_viajes">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-gas-pump nav-icon"></i><p> Control de viajes</p>
-                        </a>
-                    </li>
-
                     <li class="nav-item permission-item" data-permission="ver_actividades">
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('actividades.index') }}" class="nav-link">
                             <i class="fas fa-server nav-icon"></i><p> Actividades</p>
                         </a>
                     </li>
 
                     <li class="nav-item permission-item" data-permission="ver_finanzas">
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('finanzas.index') }}" class="nav-link">
                             <i class="fas fa-bell nav-icon"></i><p> Egresos e ingresos</p>
                         </a>
                     </li>
 
-                    <li class="nav-item permission-item" data-permission="seguir_viaje">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-truck-monster nav-icon"></i><p> Seguir viaje</p>
-                        </a>
-                    </li>
-
                     <li class="nav-item permission-item" data-permission="solicitar_servicios">
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('servicios.index') }}" class="nav-link">
                             <i class="fas fa-cash-register nav-icon"></i><p> Solicitar servicios</p>
                         </a>
                     </li>

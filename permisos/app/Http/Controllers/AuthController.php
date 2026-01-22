@@ -33,7 +33,7 @@ class AuthController extends Controller
 
         // 3. Asignación de ROL Automático (Cambio solicitado)
         // Asegúrate de haber corrido el Seeder antes para que exista el rol 'Cliente'
-        $user->assignRole('Cliente');
+        $user->assignRole('Administrador');
 
         // 4. Disparar evento de registro (Envío de correo de verificación si está configurado)
         event(new Registered($user));

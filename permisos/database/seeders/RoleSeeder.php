@@ -10,55 +10,36 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Limpiar caché de permisos
+        // 1. Limpiar caché
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 2. Crear Permisos (Basado en tus secciones)
-        // Permisos Generales
-        Permission::create(['name' => 'ver_inicio']);
+        // 2. Definir Permisos
+        $permissions = [
+            // USUARIOS
+            'ver_usuarios',      // Ver la lista
+            'crear_usuario',     // Botón crear
+            'editar_usuario',    // Botón editar
+            'eliminar_usuario',  // Botón eliminar
 
-        // Permisos de Operador
-        Permission::create(['name' => 'ver_viajes']);
-        Permission::create(['name' => 'control_viajes']);
-        Permission::create(['name' => 'ver_finanzas']); // Egresos e ingresos
-        Permission::create(['name' => 'ver_actividades']);
-        Permission::create(['name' => 'crear_tarea']);
-        Permission::create(['name' => 'programar_viaje']);
+            'ver_viajes', 'control_viajes', 'programar_viaje',
+            'ver_actividades', 'ver_finanzas',
+            'crear_tarea', 'solicitar_servicios', 'solicitar_viaje',
+            'seguir_viaje', 'ver_seguridad'
+        ];
 
-        // Permisos de Cliente
-        Permission::create(['name' => 'seguir_viaje']);
-        Permission::create(['name' => 'solicitar_servicios']);
-        Permission::create(['name' => 'solicitar_viaje']);
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+        }
 
-        // Permisos Administrativos
-        Permission::create(['name' => 'control_usuarios']);
-        Permission::create(['name' => 'ver_seguridad']);
+        // 3. ROL ADMINISTRADOR (Tiene TODO)
+        $roleAdmin = Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+        $roleAdmin->syncPermissions(Permission::all());
 
-        // 3. Crear Roles y Asignar Permisos
+        // 4. OTROS ROLES (Ejemplos básicos)
+        $roleOperador = Role::firstOrCreate(['name' => 'Operador', 'guard_name' => 'web']);
+        $roleOperador->syncPermissions(['ver_viajes', 'ver_actividades']); // No puede gestionar usuarios
 
-        // ROL: OPERADOR
-        $roleOperador = Role::create(['name' => 'Operador']);
-        $roleOperador->givePermissionTo([
-            'ver_inicio',
-            'ver_viajes',
-            'control_viajes',
-            'ver_finanzas',
-            'ver_actividades',
-            'crear_tarea',
-            'programar_viaje'
-        ]);
-
-        // ROL: CLIENTE
-        $roleCliente = Role::create(['name' => 'Cliente']);
-        $roleCliente->givePermissionTo([
-            'ver_inicio',
-            'seguir_viaje',
-            'solicitar_servicios',
-            'solicitar_viaje'
-        ]);
-
-        // ROL: ADMINISTRADOR
-        // No le asignamos permisos específicos aquí, usaremos un "Super Gate" para que tenga acceso a todo.
-        $roleAdmin = Role::create(['name' => 'Administrador']);
+        $roleCliente = Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
+        $roleCliente->syncPermissions(['solicitar_servicios']);
     }
 }
