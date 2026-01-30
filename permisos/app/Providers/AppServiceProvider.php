@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use App\Helpers\PermissionHelper;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,9 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Otorga todos los permisos implícitamente al rol 'Administrador'
         Gate::before(function ($user, $ability) {
             return $user->hasRole('Administrador') ? true : null;
         });
+
     }
 }

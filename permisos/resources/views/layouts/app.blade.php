@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistema Logístico')</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -11,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.8/sweetalert2.min.css">
 
     <style>
-        .permission-item { display: none; } /* Oculto hasta verificar JS */
+        .permission-item { display: none; }
         .nav-sidebar .nav-item { transition: all 0.3s; }
         .custom-control-label { cursor: pointer; }
         .permission-card { border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 10px; background: #fff; }
@@ -73,35 +74,48 @@
                         </a>
                     </li>
 
-                    <li class="nav-item permission-item" data-permission="ver_seguridad">
-                        <a href="{{ route('permissions.control') }}" class="nav-link">
-                            <i class="fas fa-user-shield nav-icon"></i><p> Permisos</p>
-                        </a>
-                    </li>
+                   @can('ver_seguridad')
+                        <li class="nav-item permission-item" data-permission="ver_seguridad">
+                            <a href="{{ route('permissions.control') }}" class="nav-link">
+                                <i class="fas fa-user-shield nav-icon"></i><p> Permisos</p>
+                            </a>
+                        </li>
+                    @endcan
 
-                    <li class="nav-item permission-item" data-permission="ver_usuarios">
-                        <a href="{{ route('users.control') }}" class="nav-link">
-                            <i class="fas fa-users nav-icon"></i><p> Usuarios</p>
-                        </a>
-                    </li>
 
-                    <li class="nav-item permission-item" data-permission="ver_actividades">
-                        <a href="{{ route('actividades.index') }}" class="nav-link">
-                            <i class="fas fa-server nav-icon"></i><p> Actividades</p>
-                        </a>
-                    </li>
+                    @can('ver_usuarios')
+                        <li class="nav-item">
+                            <a href="{{ route('users.control') }}" class="nav-link">
+                                <i class="fas fa-users nav-icon"></i><p> Usuarios</p>
+                            </a>
+                        </li>
+                    @endcan
 
-                    <li class="nav-item permission-item" data-permission="ver_finanzas">
-                        <a href="{{ route('finanzas.index') }}" class="nav-link">
-                            <i class="fas fa-bell nav-icon"></i><p> Egresos e ingresos</p>
-                        </a>
-                    </li>
+                    @can('ver_actividades')
+                        <li class="nav-item">
+                            <a href="{{ route('actividades.index') }}" class="nav-link">
+                                <i class="fas fa-server nav-icon"></i><p> Actividades</p>
+                            </a>
+                        </li>
+                    @endcan
 
-                    <li class="nav-item permission-item" data-permission="solicitar_servicios">
-                        <a href="{{ route('servicios.index') }}" class="nav-link">
-                            <i class="fas fa-cash-register nav-icon"></i><p> Solicitar servicios</p>
-                        </a>
-                    </li>
+                    @can('ver_finanzas')
+                        <li class="nav-item">
+                            <a href="{{ route('finanzas.index') }}" class="nav-link">
+                                <i class="fas fa-bell nav-icon"></i><p> Egresos e ingresos</p>
+                            </a>
+                        </li>
+                    @endcan
+
+
+                    @can('solicitar_servicios')
+                        <li class="nav-item">
+                            <a href="{{ route('servicios.index') }}" class="nav-link">
+                                <i class="fas fa-cash-register nav-icon"></i><p> Solicitar servicios</p>
+                            </a>
+                        </li>
+                    @endcan
+
 
                 </ul>
             </nav>

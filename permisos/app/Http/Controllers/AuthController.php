@@ -7,16 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Registro de nuevo usuario
-     */
     public function register(Request $request)
     {
-        // 1. Validación
         $request->validate([
             'name' => 'required|string|max:255|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
@@ -24,102 +19,85 @@ class AuthController extends Controller
             'terms' => 'required'
         ]);
 
-        // 2. Crear Usuario
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        // 3. Asignación de ROL Automático (Cambio solicitado)
-        // Asegúrate de haber corrido el Seeder antes para que exista el rol 'Cliente'
+        // Asignar rol (Spatie debe estar instalado correctamente)
         $user->assignRole('Administrador');
 
-        // 4. Disparar evento de registro (Envío de correo de verificación si está configurado)
         event(new Registered($user));
 
-        // 5. Autologin inmediato y generación de token
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // Obtener roles y permisos para el frontend
-        $roles = $user->getRoleNames();
-        $permissions = $user->getAllPermissions()->pluck('name');
+        // Auto-login al registrar
+        Auth::login($user);
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
-            'roles' => $roles,
-            'permissions' => $permissions
+            'user' => $user
         ], 201);
     }
 
-    /**
-     * Inicio de Sesión
-     */
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|string', // El campo se llama email pero acepta usuario
+            'email' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        // Determinar si es Email o Username
         $loginType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
 
-        // Intentar autenticar
+        // 1. ESTO CREA LA COOKIE DE SESIÓN (Vital para @can en Blade)
         if (!Auth::attempt([$loginType => $request->email, 'password' => $request->password])) {
-            return response()->json([
-                'message' => 'Credenciales incorrectas'
-            ], 401);
+            return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
+
+        // 2. Regenerar ID de sesión por seguridad
+        $request->session()->regenerate();
 
         $user = Auth::user();
 
-        // Generar Token
+        // 3. (Opcional) Token para JS, aunque con cookie ya no es estrictamente necesario
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Obtenemos los roles y permisos para enviarlos al JS
+        // Recuperamos roles y permisos REALES de la BD
         $roles = $user->getRoleNames();
         $permissions = $user->getAllPermissions()->pluck('name');
 
         return response()->json([
             'message' => 'Bienvenido',
-            'access_token' => $token,
+            'access_token' => $token, // Tu JS lo guardará en localStorage
             'token_type' => 'Bearer',
-            'user' => $user,
-            'roles' => $roles,            // <--- JS usará esto
-            'permissions' => $permissions // <--- JS usará esto para ocultar botones
-        ]);
-    }
-
-    /**
-     * Cerrar Sesión
-     */
-    public function logout(Request $request)
-    {
-        // Revocar el token actual
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'message' => 'Sesión cerrada correctamente'
-        ]);
-    }
-
-    /**
-     * Obtener datos del usuario autenticado (Opcional, útil para refrescar datos)
-     */
-    public function user(Request $request)
-    {
-        $user = $request->user();
-        $roles = $user->getRoleNames();
-        $permissions = $user->getAllPermissions()->pluck('name');
-
-        return response()->json([
             'user' => $user,
             'roles' => $roles,
             'permissions' => $permissions
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        // Borrar tokens
+        if ($request->user()) {
+            $request->user()->tokens()->delete();
+        }
+
+        // Cerrar sesión WEB
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Sesión cerrada correctamente']);
+    }
+
+    public function user(Request $request)
+    {
+        // Devolvemos datos frescos de la BD
+        $user = $request->user();
+        return response()->json([
+            'user' => $user,
+            'roles' => $user->getRoleNames(),
+            'permissions' => $user->getAllPermissions()->pluck('name')
         ]);
     }
 }

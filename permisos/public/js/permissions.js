@@ -7,23 +7,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if(roleForm) roleForm.addEventListener('submit', saveRole);
 });
 
-// 1. Cargar Lista de Roles
 async function loadRoles() {
     try {
         const response = await fetch('/api/roles', {
             headers: {
                 'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json' // <--- CRUCIAL: Fuerza respuesta JSON
+                'Accept': 'application/json'
             }
         });
 
-        // Validación de seguridad
         if (!response.ok) {
             throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
         }
 
         const roles = await response.json();
-
         const tbody = document.querySelector('#roles-table tbody');
         tbody.innerHTML = '';
 
@@ -46,49 +43,36 @@ async function loadRoles() {
         });
     } catch (error) {
         console.error("Error cargando roles:", error);
-        // Opcional: Mostrar error visual al usuario
-        // Swal.fire('Error', 'No se pudieron cargar los roles', 'error');
     }
 }
 
-// 2. Abrir Modal para CREAR
 async function openModalCreate() {
     document.getElementById('roleForm').reset();
     document.getElementById('roleId').value = '';
     document.getElementById('roleName').value = '';
     document.getElementById('modalTitle').textContent = 'Crear Nuevo Rol';
-
-    // Cargamos todos los permisos vacíos usando 'create' como flag
     await loadPermissionsInModal('create');
-
     $('#roleModal').modal('show');
 }
 
-// 3. Abrir Modal para EDITAR
 async function openModalEdit(id) {
     document.getElementById('roleId').value = id;
     document.getElementById('modalTitle').textContent = 'Editar Permisos del Rol';
-
-    // Cargamos permisos y marcamos los activos
     await loadPermissionsInModal(id);
-
     $('#roleModal').modal('show');
 }
 
-// 4. Cargar y Dibujar Checkboxes
 async function loadPermissionsInModal(roleIdOrMode) {
     const container = document.getElementById('permissions-container');
     container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary"></div></div>';
 
-    // Determinamos la URL. Si es 'create', quizás tengas una ruta específica o uses un ID dummy
-    // Asegúrate de que en Laravel /api/roles/create devuelva solo la lista de permisos
     const url = roleIdOrMode === 'create' ? '/api/roles/create' : `/api/roles/${roleIdOrMode}`;
 
     try {
         const response = await fetch(url, {
             headers: {
                 'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json' // <--- CRUCIAL
+                'Accept': 'application/json'
             }
         });
 
@@ -98,23 +82,17 @@ async function loadPermissionsInModal(roleIdOrMode) {
 
         const data = await response.json();
 
-        // Si es editar y viene el rol, llenamos el nombre
         if (data.role && roleIdOrMode !== 'create') {
             document.getElementById('roleName').value = data.role.name;
         }
 
         container.innerHTML = '';
 
-        // Recorremos TODOS los permisos del sistema
-        // data.all_permissions debe venir del backend
         if (data.all_permissions) {
             data.all_permissions.forEach(p => {
-                // Verificamos si el rol actual tiene este permiso
-                // Si data.role_permissions no existe (modo crear), es un array vacío
                 const currentPerms = data.role_permissions || [];
                 const isChecked = currentPerms.includes(p.name) ? 'checked' : '';
 
-                // Creamos el HTML del checkbox
                 const html = `
                     <div class="col-md-6 mb-2">
                         <div class="custom-control custom-switch">
@@ -137,12 +115,10 @@ async function loadPermissionsInModal(roleIdOrMode) {
     }
 }
 
-// Helper visual
 function formatPermissionName(name) {
     return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
-// 5. Guardar (Crear o Editar)
 async function saveRole(e) {
     e.preventDefault();
 
@@ -151,7 +127,6 @@ async function saveRole(e) {
     const url = isEdit ? `/api/roles/${id}` : '/api/roles';
     const method = isEdit ? 'PUT' : 'POST';
 
-    // Recolectar permisos seleccionados
     const selectedPermissions = [];
     document.querySelectorAll('.permission-check:checked').forEach(cb => {
         selectedPermissions.push(cb.value);
@@ -163,12 +138,15 @@ async function saveRole(e) {
     };
 
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
         const response = await fetch(url, {
             method: method,
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
-                'Accept': 'application/json' // <--- Ya lo tenías, pero bien mantenerlo
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify(formData)
         });
@@ -185,7 +163,6 @@ async function saveRole(e) {
     } catch (error) { console.error(error); }
 }
 
-// 6. Eliminar Rol
 window.deleteRole = async function(id) {
     const res = await Swal.fire({
         title: '¿Eliminar Rol?',
@@ -198,11 +175,14 @@ window.deleteRole = async function(id) {
 
     if (res.isConfirmed) {
         try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
             const response = await fetch(`/api/roles/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': 'Bearer ' + token,
-                    'Accept': 'application/json' // <--- Faltaba aquí también
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
                 }
             });
 

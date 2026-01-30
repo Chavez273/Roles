@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            '/login',
+            'login',
+            'http://127.0.0.1:8000/login',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

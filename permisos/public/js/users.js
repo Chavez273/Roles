@@ -1,20 +1,19 @@
 const token = localStorage.getItem('auth_token');
 const myPermissions = JSON.parse(localStorage.getItem('user_permissions') || '[]');
-let allUsers = []; // Variable global para guardar los usuarios cargados
+let allUsers = [];
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Verificar si tiene permiso de ver la pantalla
+    // 1. Verificar permiso
     if (!token || !myPermissions.includes('ver_usuarios')) {
         window.location.href = '/dashboard';
         return;
     }
 
-    // 2. Mostrar el contenedor principal
+    // 2. Mostrar wrapper
     const wrapper = document.getElementById('main-wrapper');
     if(wrapper) wrapper.style.display = 'block';
 
-    // 3. Ocultar botón de "Nuevo Usuario" si no tiene permiso
-    // Buscamos el botón por su atributo onclick
+    // 3. Botón crear
     const btnCreate = document.querySelector('button[onclick="openModalCreate()"]');
     if (btnCreate) {
         if (!myPermissions.includes('crear_usuario')) {
@@ -24,10 +23,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 4. Cargar la tabla de usuarios
+    // 4. Cargar usuarios
     loadUsers();
 
-    // 5. Configurar el evento Submit del formulario (si existe)
+    // 5. Submit form
     const userForm = document.getElementById('userForm');
     if (userForm) {
         userForm.addEventListener('submit', saveUser);
@@ -48,11 +47,10 @@ async function loadUsers() {
         if (!response.ok) throw new Error('Error al cargar usuarios');
 
         const data = await response.json();
-        allUsers = data.users; // Guardamos en global para usarlo al editar
+        allUsers = data.users;
 
         renderTable(data.users);
 
-        // Si tu API devuelve roles, llenamos el select
         if(data.roles) {
             renderRolesSelect(data.roles);
         }
@@ -70,8 +68,6 @@ function renderTable(users) {
 
     users.forEach(user => {
         const role = user.roles && user.roles.length > 0 ? user.roles[0].name : 'Sin Rol';
-
-        // Construimos los botones según los permisos
         let buttonsHtml = '';
 
         if (myPermissions.includes('editar_usuario')) {
@@ -102,52 +98,40 @@ function renderTable(users) {
 function renderRolesSelect(roles) {
     const select = document.getElementById('userRole');
     if(!select) return;
-
-    // Limpiamos y dejamos la opción por defecto
     select.innerHTML = '<option value="">Seleccione...</option>';
-
-    // Verificamos si roles es un array de strings o de objetos
     roles.forEach(r => {
-        // Ajusta esto según cómo venga tu API (r.name o r directamente)
         const roleName = (typeof r === 'object') ? r.name : r;
         select.innerHTML += `<option value="${roleName}">${roleName}</option>`;
     });
 }
 
-// --- FUNCIONES GLOBALES (Para que funcionen desde el HTML onclick) ---
+// --- FUNCIONES GLOBALES ---
 
 window.openModalCreate = function() {
     const form = document.getElementById('userForm');
     if(form) form.reset();
-
     document.getElementById('userId').value = '';
     document.getElementById('modalTitle').textContent = 'Crear Nuevo Usuario';
-
     const passHelp = document.getElementById('passHelp');
     if(passHelp) passHelp.textContent = 'Obligatoria para nuevos usuarios.';
-
     $('#userModal').modal('show');
 }
 
 window.openModalEdit = function(id) {
-    // Buscamos el usuario en la variable global
     const user = allUsers.find(u => u.id == id);
     if (!user) return;
 
     document.getElementById('userId').value = user.id;
     document.getElementById('userName').value = user.name;
-    document.getElementById('userPassword').value = ''; // Contraseña vacía al editar
+    document.getElementById('userPassword').value = '';
 
-    // Seleccionar rol
     const roleName = user.roles && user.roles.length > 0 ? user.roles[0].name : '';
     const roleSelect = document.getElementById('userRole');
     if(roleSelect) roleSelect.value = roleName;
 
     document.getElementById('modalTitle').textContent = 'Editar Usuario';
-
     const passHelp = document.getElementById('passHelp');
     if(passHelp) passHelp.textContent = 'Dejar vacío si no desea cambiarla.';
-
     $('#userModal').modal('show');
 }
 
@@ -164,11 +148,15 @@ window.deleteUser = async function(id) {
 
     if (result.isConfirmed) {
         try {
+            // --- CAMBIO: OBTENER TOKEN CSRF ---
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
             const response = await fetch(`/api/users/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': 'Bearer ' + token,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken // <--- SE AGREGA EL HEADER
                 }
             });
 
@@ -182,7 +170,7 @@ window.deleteUser = async function(id) {
     }
 }
 
-// --- FUNCIÓN DE GUARDADO (Interna) ---
+// --- FUNCIÓN DE GUARDADO ---
 
 async function saveUser(e) {
     e.preventDefault();
@@ -192,25 +180,27 @@ async function saveUser(e) {
     const url = isEdit ? `/api/users/${id}` : '/api/users';
     const method = isEdit ? 'PUT' : 'POST';
 
-    // Construimos el objeto a enviar
     const formData = {
         name: document.getElementById('userName').value,
         role: document.getElementById('userRole').value,
     };
 
-    // Solo agregamos password si se escribió algo
     const password = document.getElementById('userPassword').value;
     if (password) {
         formData.password = password;
     }
 
     try {
+        // --- CAMBIO: OBTENER TOKEN CSRF ---
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
         const response = await fetch(url, {
             method: method,
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken // <--- SE AGREGA EL HEADER
             },
             body: JSON.stringify(formData)
         });
@@ -222,7 +212,6 @@ async function saveUser(e) {
             Swal.fire('¡Éxito!', 'Operación realizada correctamente', 'success');
             loadUsers();
         } else {
-            // Mostramos error del backend
             Swal.fire('Error', result.message || 'Error al guardar', 'error');
         }
     } catch (error) {

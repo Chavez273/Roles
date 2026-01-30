@@ -17,35 +17,45 @@
                 </div>
             </div>
 
-            <div class="text-center my-3 permission-item" data-permission="crear_tarea">
-                <a href="#" style="background-color: #0055ff; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
-                    Añadir Tarea
-                </a>
-            </div>
+            @can('crear_tarea')
+                <div class="text-center my-3">
+                    <a href="#" style="background-color: #0055ff; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
+                        Añadir Tarea
+                    </a>
+                </div>
+            @endcan
 
-            <div class="text-center my-3 permission-item" data-permission="solicitar_viaje">
-                <a href="#" style="background-color: #28a745; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
-                    Solicitar viaje
-                </a>
-            </div>
+            @can('solicitar_viaje')
+                <div class="text-center my-3">
+                    <a href="#" style="background-color: #28a745; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
+                        Solicitar viaje
+                    </a>
+                </div>
+            @endcan
 
-            <div class="text-center my-3 permission-item" data-permission="programar_viaje">
-                <a href="{{ route('viajes.programar') }}" style="background-color: #17a2b8; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
-                    Programar viaje
-                </a>
-            </div>
+            @can('programar_viaje')
+                <div class="text-center my-3">
+                    <a href="{{ route('viajes.programar') }}" style="background-color: #17a2b8; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
+                        Programar viaje
+                    </a>
+                </div>
+            @endcan
 
-            <div class="text-center my-3 permission-item" data-permission="ver_usuarios">
-                <a href="{{ route('users.control') }}" style="background-color: #dc3545; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
-                    Control usuarios
-                </a>
-            </div>
+            @can('ver_usuarios')
+                <div class="text-center my-3">
+                    <a href="{{ route('users.control') }}" style="background-color: #dc3545; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
+                        Control usuarios
+                    </a>
+                </div>
+            @endcan
 
-            <div class="text-center my-3 permission-item" data-permission="ver_seguridad">
-                 <a href="{{ route('permissions.control') }}" style="background-color: #ffc107; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
-                    Gestión Permisos
-                </a>
-            </div>
+            @can('ver_seguridad')
+                <div class="text-center my-3">
+                    <a href="{{ route('permissions.control') }}" style="background-color: #ffc107; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; width: 250px;">
+                        Gestión Permisos
+                    </a>
+                </div>
+            @endcan
 
         </div>
     </div>
